@@ -15,6 +15,8 @@ import sys
 import csv
 import argparse
 
+#TODO: alphabetize missing list
+
 
 def main():
 	parser = argparse.ArgumentParser(description=('Script to check Lab attendance. ' 
@@ -75,6 +77,8 @@ def makeDict(csvfile, dlimit=',', roster=True) :
 
 	Args:
 		csvfile: csv file of current class roster (contains GTIDs for every student)
+		dlimit: delimiter to parse input csvfile
+		roster: whether the input csvfile is the class roster or not
 
 	Returns:
 		A dictionary of GTIDs to student names.
@@ -84,6 +88,7 @@ def makeDict(csvfile, dlimit=',', roster=True) :
 	with open(csvfile, 'rb') as f:
 		reader = csv.reader(f, delimiter=dlimit)
 		if roster :
+			next(reader) 	# skip first row
 			rosterDict = {rows[0]:(rows[1] + ", " + rows[2]) for rows in reader}
 		else :
 			rosterDict = {rows[0]:rows[1] for rows in reader}
@@ -94,10 +99,12 @@ def makeDict(csvfile, dlimit=',', roster=True) :
 def makeList(csvfile, index=0, dlimit=',') :
 	"""Creates list from given csv file
 
-	Reads through the csv file and creates a list out every value in the first column.
+	Reads through the csv file and creates a list out every value in the index column.
 
 	Args:
 		csvfile: csv file with single column of data to be transformed into list
+		index: index column of buzzcard numbers in input csvfile
+		dlimit: delimiter to parse input csvfile
 
 	Returns:
 		A list of all values from column one of the input csv file
@@ -123,9 +130,13 @@ def makeFinal(attendance, roster, date, recitation={}, replace={}, invert={}, dl
 
 	Args:
 		attendance: list of students who attended the timed lab 
+		roster: list of students in class roster
+		date: date string to be added to file name of created csv files
 		recitation: list of students in that particular recitation section
-		n: number of current timed lab
-
+		replace: dictionary of names to replace
+		invert: dictionary of swapped names (used with replace)
+		dlimit: delimiter to seperate created csv files
+		
 	"""
 
 	if date :
@@ -170,6 +181,7 @@ def makeFinal(attendance, roster, date, recitation={}, replace={}, invert={}, dl
 
 	fname = fname.split('.')[0]
 	fname += '_Missing.csv'
+	missing.sort()
 
 	with open (fname, 'w') as f :
 		writer = csv.writer(f, delimiter=dlimit)
@@ -179,7 +191,7 @@ def makeFinal(attendance, roster, date, recitation={}, replace={}, invert={}, dl
 		for name in missing :
 			writer.writerow([name])
 
-	print "----> Created file :" + fname
+	print "----> Created file: " + fname
 
 
 def printError(string):
